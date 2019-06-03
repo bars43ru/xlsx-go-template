@@ -66,6 +66,12 @@ func prepareTestData() (retValue *report) {
 				Field3: 7,
 				Field4: 459.987,
 			},
+			{
+				Field1: "Value\nResult",
+				Field2: 888,
+				Field3: 0,
+				Field4: 0,
+			},
 		},
 		TotalField: totalField{
 			Field: "Field3",

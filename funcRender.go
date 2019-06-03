@@ -5,10 +5,14 @@ import (
 	"fmt"
 	"github.com/tealeg/xlsx"
 	"strconv"
+	"strings"
 	"text/template"
 )
 
 func cloneSheet(from, to *xlsx.Sheet) {
+	to.SheetFormat.DefaultColWidth = from.SheetFormat.DefaultColWidth
+	to.SheetFormat.DefaultRowHeight = from.SheetFormat.DefaultRowHeight
+
 	for _, col := range from.Cols {
 		newCol := xlsx.Col{}
 		style := col.GetStyle()
@@ -23,7 +27,9 @@ func cloneSheet(from, to *xlsx.Sheet) {
 }
 
 func cloneRow(from, to *xlsx.Row) {
-	to.SetHeight(from.Height)
+	if from.Height != 0 {
+		to.SetHeight(from.Height)
+	}
 	to.Hidden = from.Hidden
 	for _, cell := range from.Cells {
 		newCell := to.AddCell()
@@ -44,11 +50,30 @@ func cloneCell(from, to *xlsx.Cell) {
 	to.NumFmt = from.NumFmt
 }
 
+func max(x, y int) int {
+	if x < y {
+		return y
+	}
+	return x
+}
+
 func renderRow(in *xlsx.Row, ctx interface{}) error {
+	var maxEnter int = 0
+
 	for _, cell := range in.Cells {
 		err := renderCell(cell, ctx)
 		if err != nil {
 			return err
+		}
+		countEnt := strings.Count(cell.Value, "\n")
+		maxEnter = max(maxEnter, countEnt)
+	}
+
+	if maxEnter != 0 {
+		if in.Height != 0 {
+			in.SetHeight(in.Height * float64(maxEnter+1))
+		} else {
+			in.SetHeight(in.Sheet.SheetFormat.DefaultRowHeight * float64(maxEnter+1))
 		}
 	}
 	return nil
