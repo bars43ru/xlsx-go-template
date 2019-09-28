@@ -50,7 +50,7 @@ func cloneCell(from, to *xlsx.Cell) {
 	to.NumFmt = from.NumFmt
 }
 
-func max(x, y int) int {
+func max(x, y float64) float64 {
 	if x < y {
 		return y
 	}
@@ -58,22 +58,28 @@ func max(x, y int) int {
 }
 
 func renderRow(in *xlsx.Row, ctx interface{}) error {
-	var maxEnter int = 0
+	var maxEntBefore float64
+	var maxEntAfter float64
 
 	for _, cell := range in.Cells {
+		countEnt := float64(strings.Count(cell.Value, "\n"))
+		maxEntBefore = max(maxEntBefore, countEnt)
+
 		err := renderCell(cell, ctx)
 		if err != nil {
 			return err
 		}
-		countEnt := strings.Count(cell.Value, "\n")
-		maxEnter = max(maxEnter, countEnt)
+
+		countEnt = float64(strings.Count(cell.Value, "\n"))
+		maxEntAfter = max(maxEntAfter, countEnt)
 	}
 
-	if maxEnter != 0 {
+	maxEntAfter = (maxEntAfter + 1) / (maxEntBefore + 1)
+	if maxEntAfter != 0 {
 		if in.Height != 0 {
-			in.SetHeight(in.Height * float64(maxEnter+1))
+			in.SetHeight(in.Height * maxEntAfter)
 		} else {
-			in.SetHeight(in.Sheet.SheetFormat.DefaultRowHeight * float64(maxEnter+1))
+			in.SetHeight(in.Sheet.SheetFormat.DefaultRowHeight * maxEntAfter)
 		}
 	}
 	return nil
