@@ -1,8 +1,8 @@
 package main
 
 import (
+	xlsx_template "github.com/bars43ru/xlsx-go-template"
 	"time"
-	xlsx_template "xlsx-template"
 )
 
 type report struct {
@@ -23,9 +23,9 @@ type totalField struct {
 	Value int
 }
 
-func (this report) TotalField4() (retValue float64) {
+func (r report) TotalField4() (retValue float64) {
 	retValue = 0
-	for _, val := range this.Items {
+	for _, val := range r.Items {
 		retValue += val.Field4
 	}
 	return
