@@ -1,7 +1,6 @@
 package xlsx_template
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -16,7 +15,7 @@ func isField(ctx interface{}, field string) error {
 			return nil
 		}
 	}
-	return errors.New(fmt.Sprint("Field %s in type %s not found.", tType.Name(), field))
+	return fmt.Errorf("field %s in type %s not found", tType.Name(), field)
 }
 
 func getField(v interface{}, field string) ([]interface{}, error) {
@@ -27,7 +26,7 @@ func getField(v interface{}, field string) ([]interface{}, error) {
 
 	fValue := reflect.Indirect(reflect.ValueOf(v)).FieldByName(field).Interface()
 
-	retVal := []interface{}{}
+	var retVal []interface{}
 
 	// convert interface to Slice
 	vlist := reflect.Indirect(reflect.ValueOf(fValue))

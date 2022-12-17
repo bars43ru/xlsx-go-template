@@ -75,7 +75,7 @@ func getRangeEndRgx(rows []*xlsx.Row) (int, error) {
 		}
 	}
 
-	return -1, errors.New("Not found end of range.")
+	return -1, errors.New("not found end of range")
 }
 
 func renderRange(iRow *int, sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) (IsRender bool, err error) {
@@ -91,7 +91,7 @@ func renderRange(iRow *int, sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}
 		return false, err
 	}
 	if !flg {
-		return false, fmt.Errorf("Range '%s' error: field '%s' in ctx is not slice or array", val.PropName, val.PropName)
+		return false, fmt.Errorf("range '%s' error: field '%s' in ctx is not slice or array", val.PropName, val.PropName)
 	}
 
 	var rangeCtx []interface{}
