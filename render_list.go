@@ -19,7 +19,7 @@ func findListProp(in *xlsx.Row, ctx interface{}) string {
 		if match := listRgx.FindAllStringSubmatch(cell.Value, -1); match != nil {
 			for i := 0; i < len(match); i++ {
 				for j := 0; j < len(match[i]); j++ {
-					if flg, _ := isSliceOrArray(ctx, match[i][j]); flg == true {
+					if flg, _ := isSliceOrArray(ctx, match[i][j]); flg {
 						return match[i][j]
 					}
 				}
