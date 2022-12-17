@@ -58,7 +58,7 @@ func max(x, y float64) float64 {
 	return x
 }
 
-func renderRow(in *xlsx.Row, ctx interface{}) error {
+func renderRow(in *xlsx.Row, v any) error {
 	var maxEntBefore float64
 	var maxEntAfter float64
 
@@ -66,7 +66,7 @@ func renderRow(in *xlsx.Row, ctx interface{}) error {
 		countEnt := float64(strings.Count(cell.Value, "\n"))
 		maxEntBefore = max(maxEntBefore, countEnt)
 
-		err := renderCell(cell, ctx)
+		err := renderCell(cell, v)
 		if err != nil {
 			return err
 		}
@@ -86,7 +86,7 @@ func renderRow(in *xlsx.Row, ctx interface{}) error {
 	return nil
 }
 
-func renderCell(cell *xlsx.Cell, ctx interface{}) error {
+func renderCell(cell *xlsx.Cell, v any) error {
 
 	var buf bytes.Buffer
 	tpl, err := template.New("").Parse(cell.Value)
@@ -94,7 +94,7 @@ func renderCell(cell *xlsx.Cell, ctx interface{}) error {
 		return err
 	}
 	buf.Reset()
-	err = tpl.Execute(&buf, ctx)
+	err = tpl.Execute(&buf, v)
 	if err != nil {
 		cell.Value = err.Error()
 		return nil
@@ -113,9 +113,9 @@ func renderCell(cell *xlsx.Cell, ctx interface{}) error {
 	return nil
 }
 
-func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
+func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, v any) error {
 
-	if isArray(ctx) {
+	if isArray(v) {
 		return errors.New("сtx can not be slice or array")
 	}
 
@@ -123,7 +123,7 @@ func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
 		row := rows[ri]
 
 		// rendering range property {{range .xxx}}
-		flg, err := renderRange(&ri, sheet, rows, ctx)
+		flg, err := renderRange(&ri, sheet, rows, v)
 		if err != nil {
 			return err
 		}
@@ -134,7 +134,7 @@ func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
 		// end rendering range property {{range .xxx}}
 
 		// rendering list property slice or array {{.xxx.yyy}}
-		flg, err = renderList(sheet, row, ctx)
+		flg, err = renderList(sheet, row, v)
 		if err != nil {
 			return err
 		}
@@ -147,7 +147,7 @@ func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
 		// rendering only property
 		newRow := sheet.AddRow()
 		cloneRow(row, newRow)
-		if err := renderRow(newRow, ctx); err != nil {
+		if err := renderRow(newRow, v); err != nil {
 			return err
 		}
 		// end rendering only property
