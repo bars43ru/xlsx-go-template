@@ -3,6 +3,7 @@ package xlsx_template
 import (
 	"bytes"
 	"errors"
+	"math"
 	"strconv"
 	"strings"
 	"text/template"
@@ -51,28 +52,23 @@ func cloneCell(from, to *xlsx.Cell) {
 	to.NumFmt = from.NumFmt
 }
 
-func max(x, y float64) float64 {
-	if x < y {
-		return y
-	}
-	return x
-}
-
-func renderRow(in *xlsx.Row, ctx interface{}) error {
-	var maxEntBefore float64
-	var maxEntAfter float64
+func renderRow(in *xlsx.Row, v any) error {
+	var (
+		maxEntBefore float64
+		maxEntAfter  float64
+	)
 
 	for _, cell := range in.Cells {
 		countEnt := float64(strings.Count(cell.Value, "\n"))
-		maxEntBefore = max(maxEntBefore, countEnt)
+		maxEntBefore = math.Max(maxEntBefore, countEnt)
 
-		err := renderCell(cell, ctx)
+		err := renderCell(cell, v)
 		if err != nil {
 			return err
 		}
 
 		countEnt = float64(strings.Count(cell.Value, "\n"))
-		maxEntAfter = max(maxEntAfter, countEnt)
+		maxEntAfter = math.Max(maxEntAfter, countEnt)
 	}
 
 	maxEntAfter = (maxEntAfter + 1) / (maxEntBefore + 1)
@@ -86,15 +82,14 @@ func renderRow(in *xlsx.Row, ctx interface{}) error {
 	return nil
 }
 
-func renderCell(cell *xlsx.Cell, ctx interface{}) error {
-
+func renderCell(cell *xlsx.Cell, v any) error {
 	var buf bytes.Buffer
 	tpl, err := template.New("").Parse(cell.Value)
 	if err != nil {
 		return err
 	}
 	buf.Reset()
-	err = tpl.Execute(&buf, ctx)
+	err = tpl.Execute(&buf, v)
 	if err != nil {
 		cell.Value = err.Error()
 		return nil
@@ -113,9 +108,8 @@ func renderCell(cell *xlsx.Cell, ctx interface{}) error {
 	return nil
 }
 
-func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
-
-	if isArray(ctx) {
+func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, v any) error {
+	if isArray(v) {
 		return errors.New("сtx can not be slice or array")
 	}
 
@@ -123,7 +117,7 @@ func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
 		row := rows[ri]
 
 		// rendering range property {{range .xxx}}
-		flg, err := renderRange(&ri, sheet, rows, ctx)
+		flg, err := renderRange(&ri, sheet, rows, v)
 		if err != nil {
 			return err
 		}
@@ -134,7 +128,7 @@ func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
 		// end rendering range property {{range .xxx}}
 
 		// rendering list property slice or array {{.xxx.yyy}}
-		flg, err = renderList(sheet, row, ctx)
+		flg, err = renderList(sheet, row, v)
 		if err != nil {
 			return err
 		}
@@ -147,7 +141,7 @@ func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
 		// rendering only property
 		newRow := sheet.AddRow()
 		cloneRow(row, newRow)
-		if err := renderRow(newRow, ctx); err != nil {
+		if err := renderRow(newRow, v); err != nil {
 			return err
 		}
 		// end rendering only property

@@ -78,7 +78,7 @@ func getRangeEndRgx(rows []*xlsx.Row) (int, error) {
 	return -1, errors.New("not found end of range")
 }
 
-func renderRange(iRow *int, sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) (IsRender bool, err error) {
+func renderRange(iRow *int, sheet *xlsx.Sheet, rows []*xlsx.Row, v any) (IsRender bool, err error) {
 
 	val, err := getRangeRows(*iRow, rows)
 	if err != nil || val == nil {
@@ -86,22 +86,22 @@ func renderRange(iRow *int, sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}
 	}
 
 	var flg bool
-	flg, err = isSliceOrArray(ctx, val.PropName)
+	flg, err = isSliceOrArray(v, val.PropName)
 	if err != nil {
 		return false, err
 	}
 	if !flg {
-		return false, fmt.Errorf("range '%s' error: field '%s' in ctx is not slice or array", val.PropName, val.PropName)
+		return false, fmt.Errorf("range '%s' error: field '%s' in v is not slice or array", val.PropName, val.PropName)
 	}
 
-	var rangeCtx []interface{}
-	rangeCtx, err = getField(ctx, val.PropName)
+	var items []any
+	items, err = getField(v, val.PropName)
 	if err != nil {
 		return false, err
 	}
 
-	for _, rnCtx := range rangeCtx {
-		err = renderRows(sheet, rows[val.BRow:val.ERow], rnCtx)
+	for _, item := range items {
+		err = renderRows(sheet, rows[val.BRow:val.ERow], item)
 		if err != nil {
 			return false, err
 		}

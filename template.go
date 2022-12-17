@@ -21,8 +21,8 @@ func New() *Template {
 	return &Template{}
 }
 
-// Render report it ctx a struct
-func (t *Template) Render(ctx interface{}) error {
+// Render report it v a struct
+func (t *Template) Render(v any) error {
 	report := xlsx.NewFile()
 	for _, templSheet := range t.template.Sheets {
 		repSheet, err := report.AddSheet("NewSheet")
@@ -34,7 +34,7 @@ func (t *Template) Render(ctx interface{}) error {
 
 		cloneSheet(templSheet, repSheet)
 
-		err = renderRows(repSheet, templSheet.Rows, ctx)
+		err = renderRows(repSheet, templSheet.Rows, v)
 		if err != nil {
 			return err
 		}
@@ -54,8 +54,8 @@ func (t *Template) ReadTemplate(path string) error {
 }
 
 // OpenBinary reads template from bytes
-func (t *Template) OpenBinary(bs []byte) error {
-	file, err := xlsx.OpenBinary(bs)
+func (t *Template) OpenBinary(b []byte) error {
+	file, err := xlsx.OpenBinary(b)
 	if err != nil {
 		return err
 	}

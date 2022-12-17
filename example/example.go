@@ -38,9 +38,9 @@ func main() {
 		panic(err)
 	}
 
-	ctx := prepareTestData()
+	v := prepareTestData()
 
-	err := doc.Render(ctx)
+	err := doc.Render(v)
 	if err != nil {
 		panic(err)
 	}
