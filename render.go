@@ -3,6 +3,7 @@ package xlsx_template
 import (
 	"bytes"
 	"errors"
+	"math"
 	"strconv"
 	"strings"
 	"text/template"
@@ -51,20 +52,15 @@ func cloneCell(from, to *xlsx.Cell) {
 	to.NumFmt = from.NumFmt
 }
 
-func max(x, y float64) float64 {
-	if x < y {
-		return y
-	}
-	return x
-}
-
 func renderRow(in *xlsx.Row, v any) error {
-	var maxEntBefore float64
-	var maxEntAfter float64
+	var (
+		maxEntBefore float64
+		maxEntAfter  float64
+	)
 
 	for _, cell := range in.Cells {
 		countEnt := float64(strings.Count(cell.Value, "\n"))
-		maxEntBefore = max(maxEntBefore, countEnt)
+		maxEntBefore = math.Max(maxEntBefore, countEnt)
 
 		err := renderCell(cell, v)
 		if err != nil {
@@ -72,7 +68,7 @@ func renderRow(in *xlsx.Row, v any) error {
 		}
 
 		countEnt = float64(strings.Count(cell.Value, "\n"))
-		maxEntAfter = max(maxEntAfter, countEnt)
+		maxEntAfter = math.Max(maxEntAfter, countEnt)
 	}
 
 	maxEntAfter = (maxEntAfter + 1) / (maxEntBefore + 1)
@@ -87,7 +83,6 @@ func renderRow(in *xlsx.Row, v any) error {
 }
 
 func renderCell(cell *xlsx.Cell, v any) error {
-
 	var buf bytes.Buffer
 	tpl, err := template.New("").Parse(cell.Value)
 	if err != nil {
@@ -114,7 +109,6 @@ func renderCell(cell *xlsx.Cell, v any) error {
 }
 
 func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, v any) error {
-
 	if isArray(v) {
 		return errors.New("сtx can not be slice or array")
 	}

@@ -29,9 +29,9 @@ func findListProp(in *xlsx.Row, v any) string {
 	return ""
 }
 
-func prepareListProp(in *xlsx.Row, Prop string) {
+func prepareListProp(in *xlsx.Row, prop string) {
 	for _, cell := range in.Cells {
-		cell.Value = strings.Replace(cell.Value, "."+Prop+".", ".", strings.Count(cell.Value, "."+Prop+"."))
+		cell.Value = strings.Replace(cell.Value, "."+prop+".", ".", strings.Count(cell.Value, "."+prop+"."))
 	}
 }
 

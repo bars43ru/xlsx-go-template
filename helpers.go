@@ -38,21 +38,18 @@ func getField(v any, field string) ([]any, error) {
 }
 
 func isArray(v any) bool {
-
 	switch tp := reflect.Indirect(reflect.ValueOf(v)).Kind(); tp {
 	case reflect.Slice, reflect.Array:
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
 func isSliceOrArray(v any, field string) (bool, error) {
-
 	if err := isField(v, field); err != nil {
 		return false, err
 	}
-
 	fValue := reflect.Indirect(reflect.ValueOf(v)).FieldByName(field).Interface()
-
 	return isArray(fValue), nil
 }
