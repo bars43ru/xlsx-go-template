@@ -16,7 +16,7 @@ func isField(ctx interface{}, field string) error {
 			return nil
 		}
 	}
-	return errors.New(fmt.Sprint("field %s in type %s not found.", tType.Name(), field))
+	return errors.New(fmt.Sprintf("field %s in type %s not found.", tType.Name(), field))
 }
 
 func getField(v interface{}, field string) ([]interface{}, error) {

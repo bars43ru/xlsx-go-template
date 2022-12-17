@@ -2,7 +2,7 @@ package xlsx_template
 
 import (
 	"bytes"
-	"fmt"
+	"errors"
 	"strconv"
 	"strings"
 	"text/template"
@@ -116,7 +116,7 @@ func renderCell(cell *xlsx.Cell, ctx interface{}) error {
 func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
 
 	if isArray(ctx) {
-		return fmt.Errorf("Ctx can not be slice or array.")
+		return errors.New("сtx can not be slice or array")
 	}
 
 	for ri := 0; ri < len(rows); ri++ {
@@ -144,7 +144,7 @@ func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, ctx interface{}) error {
 		}
 		// end rendering list property
 
-		// renderind only property
+		// rendering only property
 		newRow := sheet.AddRow()
 		cloneRow(row, newRow)
 		if err := renderRow(newRow, ctx); err != nil {
