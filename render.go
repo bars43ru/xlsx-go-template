@@ -110,7 +110,7 @@ func renderCell(cell *xlsx.Cell, v any) error {
 
 func renderRows(sheet *xlsx.Sheet, rows []*xlsx.Row, v any) error {
 	if isArray(v) {
-		return errors.New("сtx can not be slice or array")
+		return errors.New("v can not be slice or array")
 	}
 
 	for ri := 0; ri < len(rows); ri++ {
