@@ -2,8 +2,9 @@ package xlsx_template
 
 import (
 	"errors"
-	"github.com/tealeg/xlsx"
 	"io"
+
+	"github.com/tealeg/xlsx/v2"
 )
 
 // Xlst template struct
@@ -19,9 +20,7 @@ func New() *XlstTemplate {
 
 // Render report it ctx a struct
 func (this *XlstTemplate) Render(ctx interface{}) error {
-
 	report := xlsx.NewFile()
-
 	for _, templSheet := range this.template.Sheets {
 		repSheet, err := report.AddSheet("NewSheet")
 		if err != nil {
@@ -36,14 +35,8 @@ func (this *XlstTemplate) Render(ctx interface{}) error {
 		if err != nil {
 			return err
 		}
-
-		for _, col := range templSheet.Cols {
-			repSheet.Cols = append(repSheet.Cols, col)
-		}
-
 	}
 	this.report = report
-
 	return nil
 }
 
