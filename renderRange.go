@@ -3,8 +3,9 @@ package xlsx_template
 import (
 	"errors"
 	"fmt"
-	"github.com/tealeg/xlsx"
 	"regexp"
+
+	"github.com/tealeg/xlsx/v2"
 )
 
 var (

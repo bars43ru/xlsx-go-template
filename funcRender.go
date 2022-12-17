@@ -3,17 +3,18 @@ package xlsx_template
 import (
 	"bytes"
 	"fmt"
-	"github.com/tealeg/xlsx"
 	"strconv"
 	"strings"
 	"text/template"
+
+	"github.com/tealeg/xlsx/v2"
 )
 
 func cloneSheet(from, to *xlsx.Sheet) {
 	to.SheetFormat.DefaultColWidth = from.SheetFormat.DefaultColWidth
 	to.SheetFormat.DefaultRowHeight = from.SheetFormat.DefaultRowHeight
 
-	for _, col := range from.Cols {
+	from.Cols.ForEach(func(idx int, col *xlsx.Col) {
 		newCol := xlsx.Col{}
 		style := col.GetStyle()
 		newCol.SetStyle(style)
@@ -22,8 +23,8 @@ func cloneSheet(from, to *xlsx.Sheet) {
 		newCol.Collapsed = col.Collapsed
 		newCol.Min = col.Min
 		newCol.Max = col.Max
-		to.Cols = append(to.Cols, &newCol)
-	}
+		to.Cols.Add(&newCol)
+	})
 }
 
 func cloneRow(from, to *xlsx.Row) {

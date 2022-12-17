@@ -1,9 +1,10 @@
 package xlsx_template
 
 import (
-	"github.com/tealeg/xlsx"
 	"regexp"
 	"strings"
+
+	"github.com/tealeg/xlsx/v2"
 )
 
 var (
