@@ -35,7 +35,7 @@ func cloneRow(from, to *xlsx.Row) {
 		to.SetHeight(height)
 	}
 	to.Hidden = from.Hidden
-	from.ForEachCell(func(cell *xlsx.Cell) error {
+	_ = from.ForEachCell(func(cell *xlsx.Cell) error {
 		newCell := to.AddCell()
 		cloneCell(cell, newCell)
 		return nil
@@ -61,7 +61,7 @@ func renderRow(in *xlsx.Row, v any) error {
 		maxEntAfter  float64
 	)
 
-	in.ForEachCell(func(cell *xlsx.Cell) error {
+	err := in.ForEachCell(func(cell *xlsx.Cell) error {
 		countEnt := float64(strings.Count(cell.Value, "\n"))
 		maxEntBefore = math.Max(maxEntBefore, countEnt)
 
@@ -74,6 +74,9 @@ func renderRow(in *xlsx.Row, v any) error {
 		maxEntAfter = math.Max(maxEntAfter, countEnt)
 		return nil
 	})
+	if err != nil {
+		return err
+	}
 
 	maxEntAfter = (maxEntAfter + 1) / (maxEntBefore + 1)
 	if maxEntAfter != 0 {

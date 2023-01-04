@@ -13,7 +13,7 @@ var (
 
 func findListProp(in *xlsx.Row, v any) string {
 	var r string
-	in.ForEachCell(func(cell *xlsx.Cell) error {
+	_ = in.ForEachCell(func(cell *xlsx.Cell) error {
 		if cell.Value == "" {
 			return nil
 		}
@@ -34,7 +34,7 @@ func findListProp(in *xlsx.Row, v any) string {
 }
 
 func prepareListProp(in *xlsx.Row, prop string) {
-	in.ForEachCell(func(cell *xlsx.Cell) error {
+	_ = in.ForEachCell(func(cell *xlsx.Cell) error {
 		cell.Value = strings.Replace(cell.Value, "."+prop+".", ".", strings.Count(cell.Value, "."+prop+"."))
 		return nil
 	})
