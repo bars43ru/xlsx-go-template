@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/tealeg/xlsx/v2"
+	"github.com/tealeg/xlsx/v3"
 )
 
 // Template struct
@@ -34,7 +34,7 @@ func (t *Template) Render(v any) error {
 
 		cloneSheet(sheet, repSheet)
 
-		err = renderRows(repSheet, sheet.Rows, v)
+		err = renderRows(sheet, repSheet, 0, sheet.MaxRow-1, v)
 		if err != nil {
 			return err
 		}

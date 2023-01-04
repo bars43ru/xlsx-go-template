@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/tealeg/xlsx/v2"
+	"github.com/tealeg/xlsx/v3"
 )
 
 var (
@@ -12,27 +12,32 @@ var (
 )
 
 func findListProp(in *xlsx.Row, v any) string {
-	for _, cell := range in.Cells {
+	var r string
+	in.ForEachCell(func(cell *xlsx.Cell) error {
 		if cell.Value == "" {
-			continue
+			return nil
 		}
+
 		if match := listRgx.FindAllStringSubmatch(cell.Value, -1); match != nil {
 			for i := 0; i < len(match); i++ {
 				for j := 0; j < len(match[i]); j++ {
 					if flg, _ := isSliceOrArray(v, match[i][j]); flg {
-						return match[i][j]
+						r = match[i][j]
+						return nil
 					}
 				}
 			}
 		}
-	}
-	return ""
+		return nil
+	})
+	return r
 }
 
 func prepareListProp(in *xlsx.Row, prop string) {
-	for _, cell := range in.Cells {
+	in.ForEachCell(func(cell *xlsx.Cell) error {
 		cell.Value = strings.Replace(cell.Value, "."+prop+".", ".", strings.Count(cell.Value, "."+prop+"."))
-	}
+		return nil
+	})
 }
 
 // rendering list property slice or array {{.xxx.yyy}}
