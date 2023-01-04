@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io"
 
-	"github.com/tealeg/xlsx/v2"
+	"github.com/tealeg/xlsx/v3"
 )
 
 // Template struct
@@ -24,17 +24,17 @@ func New() *Template {
 // Render report it v a struct
 func (t *Template) Render(v any) error {
 	report := xlsx.NewFile()
-	for _, templSheet := range t.template.Sheets {
+	for _, sheet := range t.template.Sheets {
 		repSheet, err := report.AddSheet("NewSheet")
 		if err != nil {
 			return err
 		}
 
-		repSheet.Name = templSheet.Name
+		repSheet.Name = sheet.Name
 
-		cloneSheet(templSheet, repSheet)
+		cloneSheet(sheet, repSheet)
 
-		err = renderRows(repSheet, templSheet.Rows, v)
+		err = renderRows(sheet, repSheet, 0, sheet.MaxRow-1, v)
 		if err != nil {
 			return err
 		}

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/tealeg/xlsx/v2"
+	"github.com/tealeg/xlsx/v3"
 )
 
 var (
@@ -19,12 +19,15 @@ type rangeRows struct {
 	ERow     int
 }
 
-func getRangeRows(iRow int, rows []*xlsx.Row) (*rangeRows, error) {
-
+func getRangeRows(beginRow, endRow int, template *xlsx.Sheet) (*rangeRows, error) {
 	// check begin range
+	row, err := template.Row(beginRow)
+	if err != nil {
+		return nil, fmt.Errorf("get row: %w", err)
+	}
 	retValue := &rangeRows{
-		PropName: getRangeRgx(rows[iRow]),
-		BRow:     iRow + 1,
+		PropName: getRangeRgx(row),
+		BRow:     beginRow + 1,
 	}
 
 	if retValue.PropName == "" {
@@ -32,36 +35,34 @@ func getRangeRows(iRow int, rows []*xlsx.Row) (*rangeRows, error) {
 	}
 
 	// find end range
-	if ri, err := getRangeEndRgx(rows[retValue.BRow:]); err != nil {
-		return nil, fmt.Errorf("Range '%s' error: %s", retValue.PropName, err.Error())
+	if ri, err := getRangeEndRgx(retValue.BRow, endRow, template); err != nil {
+		return nil, fmt.Errorf("range '%s': %w", retValue.PropName, err)
 	} else {
-		retValue.ERow = retValue.BRow + ri
+		retValue.ERow = ri
 	}
 
 	return retValue, nil
 }
 
 func getRangeRgx(in *xlsx.Row) string {
-
-	if len(in.Cells) != 0 {
-		match := rangeRgx.FindAllStringSubmatch(in.Cells[0].Value, -1)
-		if match != nil {
-			return match[0][1]
-		}
+	cell := in.GetCell(0)
+	match := rangeRgx.FindAllStringSubmatch(cell.Value, -1)
+	if match != nil {
+		return match[0][1]
 	}
-
 	return ""
 }
 
-func getRangeEndRgx(rows []*xlsx.Row) (int, error) {
+func getRangeEndRgx(beginRow, endRow int, template *xlsx.Sheet) (int, error) {
 	var nesting int
 
-	for idx, row := range rows {
-		if len(row.Cells) == 0 {
-			continue
+	for idx := beginRow; idx <= endRow; idx++ {
+		row, err := template.Row(idx)
+		if err != nil {
+			return 0, fmt.Errorf("get row: %w", err)
 		}
-
-		if rangeEndRgx.MatchString(rows[idx].Cells[0].Value) {
+		cell := row.GetCell(0)
+		if rangeEndRgx.MatchString(cell.Value) {
 			if nesting == 0 {
 				return idx, nil
 			}
@@ -70,17 +71,16 @@ func getRangeEndRgx(rows []*xlsx.Row) (int, error) {
 			continue
 		}
 
-		if rangeRgx.MatchString(rows[idx].Cells[0].Value) {
+		if rangeRgx.MatchString(cell.Value) {
 			nesting++
 		}
 	}
-
 	return -1, errors.New("not found end of range")
 }
 
-func renderRange(iRow *int, sheet *xlsx.Sheet, rows []*xlsx.Row, v any) (IsRender bool, err error) {
-
-	val, err := getRangeRows(*iRow, rows)
+// template, destination *xlsx.Sheet, startRow, endRow int,
+func renderRange(iRow *int, template, sheet *xlsx.Sheet, endRow int, v any) (IsRender bool, err error) {
+	val, err := getRangeRows(*iRow, endRow, template)
 	if err != nil || val == nil {
 		return false, err
 	}
@@ -101,7 +101,7 @@ func renderRange(iRow *int, sheet *xlsx.Sheet, rows []*xlsx.Row, v any) (IsRende
 	}
 
 	for _, item := range items {
-		err = renderRows(sheet, rows[val.BRow:val.ERow], item)
+		err = renderRows(template, sheet, val.BRow, val.ERow-1, item)
 		if err != nil {
 			return false, err
 		}
